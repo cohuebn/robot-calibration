@@ -2,8 +2,14 @@ import pandas as pd
 from scipy.signal import savgol_filter
 
 
-def read_logs(log_filename: str) -> pd.DataFrame:
-    """Read WPI logs and get relevant measures for drivetrain feed-forward calibration"""
+def read_logs(log_filename: str, max_time: float | None = None) -> pd.DataFrame:
+    """Read WPI logs and get relevant measures for drivetrain feed-forward calibration
+
+    Arguments
+        log_filename (str): The filename to get WPI logs from
+        max_time (float | None): The maximum time (in seconds from start) to get log data for. If not provided,
+            all logs will be retrieved
+    """
     relevant_columns = {
         "Timestamp": "timestamp",
         "NT:/SmartDashboard/Drivetrain Calibration/phase": "phase",
@@ -18,7 +24,8 @@ def read_logs(log_filename: str) -> pd.DataFrame:
     # Rename relevant columns; drop any rows without a "phase" column
     df = df.rename(columns=relevant_columns).dropna(subset=["phase", "left_motor_rate", "right_motor_rate"])
     # Return only the relevant columns
-    return df[list(relevant_columns.values())].sort_values(by="timestamp")
+    relevant_data = df[list(relevant_columns.values())].sort_values(by="timestamp")
+    return relevant_data if max_time is None else relevant_data[relevant_data["timestamp"] <= max_time]
 
 
 def _remove_noise(series: pd.Series) -> pd.Series:
