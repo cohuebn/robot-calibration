@@ -1,0 +1,9 @@
+line-length = 120
+
+[lint.isort]
+lines-after-imports = 2
+
+[lint]
+ignore = [
+  "PLE0604", # __all__ can export using __name__ instead of raw string
+]

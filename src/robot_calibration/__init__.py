@@ -1,2 +1,1 @@
-def main() -> None:
-    print("Hello from robot-calibration!")
+# Just here to initialize top-level package
