@@ -1,0 +1,17 @@
+[project]
+name = "robot-calibration"
+version = "0.1.0"
+description = "Various utilities, libraries, etc. used for calibrating robot controllers"
+readme = "README.md"
+authors = [
+    { name = "Cory Huebner", email = "chuebner86@gmail.com" }
+]
+requires-python = ">=3.12"
+dependencies = []
+
+[project.scripts]
+robot-calibration = "robot_calibration:main"
+
+[build-system]
+requires = ["uv_build>=0.12.17,<0.13.0"]
+build-backend = "uv_build"
