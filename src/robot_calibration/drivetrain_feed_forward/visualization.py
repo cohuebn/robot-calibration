@@ -4,6 +4,10 @@ import pandas as pd
 import plotly.graph_objects as pgo
 
 
+_time_units = "Run Time (Seconds)"
+_motor_velocity_units = "Inches per Second"
+
+
 Phase = Literal["RampUp", "RampDown", "ReturnToZero"]
 
 
@@ -25,10 +29,10 @@ def _get_phase_title(phase: Phase) -> str:
     return phase_settings["title"] if phase_settings else phase
 
 
-def _add_phase_shading(figure: pgo.Figure, log_data: pd.DataFrame):
+def _add_phase_shading(figure: pgo.Figure, fitting_data: pd.DataFrame):
     """Add shading for the phases (ramp up, ramp down, return to zero) to the given figure"""
     # Assign distinct colors for phases
-    for phase, group in log_data.groupby("phase"):
+    for phase, group in fitting_data.groupby("phase"):
         x_start = group["timestamp"].min()
         x_end = group["timestamp"].max()
 
@@ -75,8 +79,53 @@ def get_chart_of_voltage_impact_on_motors(log_data: pd.DataFrame, chart_title: s
     _add_phase_shading(chart, log_data)
     chart.update_layout(
         title=chart_title,
-        xaxis={"title": "Run Time (Seconds)"},
-        yaxis={"title": "Inches per second"},
+        xaxis={"title": _time_units},
+        yaxis={"title": _motor_velocity_units},
+        yaxis2={
+            "title": "Voltage",
+            "overlaying": "y",
+            "side": "right",
+        },
+    )
+    return chart
+
+
+def get_chart_of_actual_vs_predicted_voltage(
+    fitting_data: pd.DataFrame, velocity_column_name: str, chart_title: str
+) -> pgo.Figure:
+    # Visualize the voltage impact on motors
+    chart = pgo.Figure()
+    chart.add_trace(
+        pgo.Scatter(
+            name="Motor Rate",
+            x=fitting_data["timestamp"],
+            y=fitting_data[velocity_column_name],
+            mode="lines",
+        )
+    )
+    chart.add_trace(
+        pgo.Scatter(
+            name="Actual Voltage",
+            x=fitting_data["timestamp"],
+            y=fitting_data["voltage"],
+            mode="lines",
+            yaxis="y2",
+        )
+    )
+    chart.add_trace(
+        pgo.Scatter(
+            name="Predicted Voltage",
+            x=fitting_data["timestamp"],
+            y=fitting_data["left_motor_predicted_voltage"],
+            mode="lines",
+            yaxis="y2",
+        )
+    )
+    _add_phase_shading(chart, fitting_data)
+    chart.update_layout(
+        title=chart_title,
+        xaxis={"title": _time_units},
+        yaxis={"title": _motor_velocity_units},
         yaxis2={
             "title": "Voltage",
             "overlaying": "y",
